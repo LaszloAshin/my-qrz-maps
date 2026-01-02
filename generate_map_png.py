@@ -8,7 +8,9 @@ import requests
 import math
 import mercantile
 from PIL import Image, ImageDraw
+from PIL.PngImagePlugin import PngInfo
 from io import BytesIO
+from pathlib import Path
 
 CALLSIGN = "HA5LA"
 OUT_PNG = "map.png"
@@ -37,6 +39,8 @@ points = [
 
 if not points:
     raise RuntimeError("No activation coordinates found")
+
+points = sorted(points, key=lambda p: (p[0], p[1]))
 
 lats = [p[0] for p in points]
 lons = [p[1] for p in points]
@@ -100,13 +104,34 @@ draw = ImageDraw.Draw(img)
 # ------------------------------------------------------------
 # Fetch and stitch map tiles
 # ------------------------------------------------------------
+TILE_CACHE = Path("tile_cache")
+
+def get_tile(z, x, y, session):
+    path = TILE_CACHE / str(z) / str(x) / f"{y}.png"
+    if path.exists():
+        return Image.open(path).convert("RGB")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    url = TILE_URL.format(z=z, x=x, y=y)
+    resp = session.get(url, timeout=20)
+    resp.raise_for_status()
+
+    img = Image.open(BytesIO(resp.content))
+    img.save(path, format="PNG")
+
+    return img
+
 session = requests.Session()
 session.headers["User-Agent"] = "SOTA-map-generator/1.0 (ham radio)"
 
+tiles = sorted(
+    tiles,
+    key=lambda t: (t.y, t.x)
+)
+
 for t in tiles:
-    tile_url = TILE_URL.format(z=ZOOM, x=t.x, y=t.y)
-    resp = session.get(tile_url, timeout=20)
-    tile = Image.open(BytesIO(resp.content))
+    tile = get_tile(t.z, t.x, t.y, session)
     px = (t.x - min_x) * TILE_SIZE
     py = (t.y - min_y) * TILE_SIZE
     img.paste(tile, (px, py))
@@ -134,5 +159,15 @@ for lat, lon in points:
 # ------------------------------------------------------------
 # Save result
 # ------------------------------------------------------------
-img.save(OUT_PNG)
+raw = img.tobytes()
+stable = Image.frombytes("RGB", img.size, raw)
+pnginfo = PngInfo()  # EMPTY: no metadata
+stable.save(
+    OUT_PNG,
+    format="PNG",
+    pngingo=pnginfo,
+    optimize=False,
+    compress_level=9,
+    add_time=False
+)
 print(f"Saved {OUT_PNG}")
