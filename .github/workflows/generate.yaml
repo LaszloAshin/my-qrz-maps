@@ -42,13 +42,6 @@ jobs:
           mkdir -p output
           ./postprocess-png.sh map.png output/map.png
 
-      - name: 'Upload Artifacts'
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-artifact
-          path: output/
-          retention-days: 5
-
       - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
