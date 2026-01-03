@@ -33,12 +33,18 @@ jobs:
         run: |
           sudo apt-get install -y --no-install-recommends pngcrush pngquant
 
-      - name: Generate stuff
+      - name: Generate sota report
         run: |
           uv run main.py
-          mkdir output
+          mkdir -p output
           mv sota.html output/
           ./postprocess-png.sh sota.png output/sota.png
+
+      - name: Generate geocaching report
+        run: |
+          uv run geocaching_hu_api_viz.py
+          mkdir -p output
+          ./postprocess-png.sh geocaching_stats.png output/geocaching.png
 
       - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
