@@ -26,7 +26,7 @@ MARKER_RADIUS = 4
 # ------------------------------------------------------------
 # Fetch activation data from SOTL.as
 # ------------------------------------------------------------
-url = f'https://sotl.as/api/activations/{os.environ["CALLSIGN"]}'
+url = f'https://sotl.as/api/activations/{os.environ["CALLSIGN"].upper()}'
 data = requests.get(url, timeout=30).json()
 
 points = [

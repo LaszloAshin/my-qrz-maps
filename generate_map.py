@@ -15,7 +15,7 @@ from branca.element import Element
 OUT_HTML = "map.html"
 
 # Fetch activation data
-url = f'https://sotl.as/api/activations/{os.environ["CALLSIGN"]}'
+url = f'https://sotl.as/api/activations/{os.environ["CALLSIGN"].upper()}'
 data = requests.get(url, timeout=30).json()
 
 # Center map
