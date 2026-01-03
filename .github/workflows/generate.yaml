@@ -29,20 +29,15 @@ jobs:
           key: osm-tile-cache
           path: tile_cache/
 
-      - name: Generate sota.html
-        run: |
-          ./generate_map.py
-          mkdir output
-          mv sota.html output/
-
       - name: Install png postprocess tooling
         run: |
           sudo apt-get install -y --no-install-recommends pngcrush pngquant
 
-      - name: Generate sota.png
+      - name: Generate stuff
         run: |
-          ./generate_map_png.py
-          mkdir -p output
+          uv run main.py
+          mkdir output
+          mv sota.html output/
           ./postprocess-png.sh sota.png output/sota.png
 
       - name: Publish to GitHub Pages
