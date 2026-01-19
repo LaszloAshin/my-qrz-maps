@@ -7,7 +7,7 @@ def get_callsign():
     callsign = os.getenv("CALLSIGN")
     return callsign if callsign else os.environ["GITHUB_REPOSITORY_OWNER"]
 
-CALLSIGN = get_callsign()
+CALLSIGN = get_callsign().upper()
 OUTFILE = Path("wwa-2026-jan.svg")
 
 URL = (
